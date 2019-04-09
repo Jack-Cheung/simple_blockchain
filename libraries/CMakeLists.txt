@@ -4,7 +4,7 @@ add_subdirectory( fc )
 #add_subdirectory( chainbase )
 #add_subdirectory( wasm-jit )
 add_subdirectory( appbase )
-#add_subdirectory( chain )
+add_subdirectory( chain )
 #add_subdirectory( testing )
 
 #turn these off for now

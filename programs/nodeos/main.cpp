@@ -5,6 +5,7 @@
 #include <appbase/application.hpp>
 
 #include <eosio/http_plugin/http_plugin.hpp>
+#include <eosio/chain_plugin/chain_plugin.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/filesystem.hpp>
 
@@ -41,7 +42,7 @@ int main(int argc, char** argv)
          .default_unix_socket_path = "",
          .default_http_port = 8888
       });
-      if(!app().initialize<http_plugin>(argc, argv))
+      if(!app().initialize<http_plugin, chain_plugin>(argc, argv))
          return INITIALIZE_FAIL;
       //initialize_logging();
       ilog("nodeos version ${ver}", ("ver", app().version_string()));
