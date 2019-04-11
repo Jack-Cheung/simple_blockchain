@@ -3,6 +3,7 @@
 #include <fc/crypto/sha256.hpp>
 #include <fc/crypto/public_key.hpp>
 #include <fc/crypto/private_key.hpp>
+#include <fc/io/json.hpp>
 #include <vector>
 #include <string>
 class Transaction{
@@ -13,6 +14,7 @@ public:
     std::vector<char> attach;
     fc::crypto::signature signature;
     fc::crypto::public_key pub_key;
+    
     void fillTestData();
     fc::sha256 digest();
 };

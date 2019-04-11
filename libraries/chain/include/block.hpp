@@ -15,7 +15,7 @@ public:
     fc::crypto::signature sig;
     std::vector<Transaction> trxs;
 
-    void build(uint64_t blk_num, fc::sha256 prior_hash, std::vector<Transaction>& trxs);
+    void push_trxs(std::vector<Transaction>& trxs);
 };
 
 FC_REFLECT(Block, (time_point)(prior_hash)(blk_num)(trxs)(merkle_root)(sig))

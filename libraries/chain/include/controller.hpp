@@ -7,8 +7,8 @@ class Controller
 private:
     std::vector<Transaction> trx_pool;
     fc::crypto::public_key producer_key;
+    fc::crypto::private_key private_key;
     std::vector<Block> blk_cache;
-    void buildBlock();
 public:
     Controller();
     ~Controller();

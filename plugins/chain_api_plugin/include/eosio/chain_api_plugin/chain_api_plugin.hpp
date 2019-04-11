@@ -7,12 +7,13 @@
 #include <eosio/http_plugin/http_plugin.hpp>
 
 #include <appbase/application.hpp>
-#include <eosio/chain/controller.hpp>
+#include <controller.hpp>
 
 namespace eosio {
-   using eosio::chain::controller;
    using std::unique_ptr;
    using namespace appbase;
+
+   
 
    class chain_api_plugin : public plugin<chain_api_plugin> {
       public:
@@ -27,8 +28,12 @@ namespace eosio {
         void plugin_startup();
         void plugin_shutdown();
 
+
+
       private:
         unique_ptr<class chain_api_plugin_impl> my;
    };
+
+
 
 }

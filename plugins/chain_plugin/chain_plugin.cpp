@@ -4,12 +4,14 @@
  */
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <fc/exception/exception.hpp>
-#include <controller.hpp>
+
 namespace eosio {
    static appbase::abstract_plugin& _chain_plugin = app().register_plugin<chain_plugin>();
 
 class chain_plugin_impl {
-   public:
+public:
+
+   fc::optional<Controller>         chain;
 };
 
 chain_plugin::chain_plugin():my(new chain_plugin_impl()){}
@@ -27,19 +29,33 @@ void chain_plugin::plugin_initialize(const variables_map& options) {
       if( options.count( "option-name" )) {
          // Handle the option
       }
+      my->chain.emplace();
    }
    FC_LOG_AND_RETHROW()
 }
 
 void chain_plugin::plugin_startup() {
    dlog("chain_plugin startup");
-   //TODO
    Controller  c;
+   std::vector<Transaction> trxs;
+   Transaction t1;
+   t1.fillTestData();
+   Transaction t2;
+   t2.fillTestData();
+   c.commitTrx(t1);
+   c.commitTrx(t2);
+   c.pushBlock();
+   c.commitTrx(t2);
+   c.commitTrx(t2);
    c.pushBlock();
 }
 
 void chain_plugin::plugin_shutdown() {
    dlog("chain_plugin shutdown");
 }
+
+Controller& chain_plugin::chain() { return *my->chain; }
+
+const Controller& chain_plugin::chain() const { return *my->chain; }
 
 }

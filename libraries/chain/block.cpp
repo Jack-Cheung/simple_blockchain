@@ -16,20 +16,8 @@ fc::sha256 Block::digest()
     return enc.result();
 }
 
-void Block::build(uint64_t blk_num, fc::sha256 prior_hash, std::vector<Transaction>& trxs)
+void Block::push_trxs(std::vector<Transaction>& trxs)
 {
-    /*
-        uint64_t blk_num;
-    fc::sha256  prior_hash;
-    fc::time_point_sec time_point;
-    fc::sha256 merkle_root;
-    fc::sha256 sign;
-    std::vector<Transaction> trxs;
-    */
     this->trxs.assign(trxs.cbegin(), trxs.cend());
-    this->blk_num = blk_num;
-    this->prior_hash = prior_hash;
-
     merkle_root = fc::sha256::hash(trxs);
-    //dlog("hash = ${h}",("h", hash));
 }

@@ -3,8 +3,10 @@
 void Transaction::fillTestData()
 {
     time_point = fc::time_point::now();
-    data = fc::raw::pack(std::string("this is test data"));
-    attach = fc::raw::pack(std::string("this is test attach"));
+    std::string str = "this is test data";
+    data.assign(str.cbegin(), str.cend());
+    str = "this is test attach";
+    attach.assign(str.cbegin(), str.cend());
     fc::crypto::public_key  pub_k;
     fc::crypto::private_key priv_k;
     priv_k = fc::crypto::private_key::generate<fc::ecc::private_key_shim>();
@@ -16,7 +18,6 @@ void Transaction::fillTestData()
     dlog("signature=${s}", ("s", signature));
     fc::crypto::public_key k = fc::crypto::public_key(signature, dgst);
     dlog("public key from sig=${pk}", ("pk", k));
-
 }
 
 fc::sha256 Transaction::digest()
