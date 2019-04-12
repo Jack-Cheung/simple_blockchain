@@ -80,11 +80,10 @@ void chain_api_plugin::plugin_startup() {
 
    auto& _http_plugin = app().get_plugin<http_plugin>();
 
-   //TODO
-   /*_http_plugin.add_api({
+   _http_plugin.add_api({
       CHAIN_RO_CALL(get_info, 200l),
-      CHAIN_RW_CALL_ASYNC(add_string, chain_apis::read_write::common_result, 202),
-   });*/
+      CHAIN_RW_CALL_ASYNC(push_transaction, chain_apis::read_write::push_transaction_results, 202),
+   });
 }
 
 void chain_api_plugin::plugin_shutdown() {}

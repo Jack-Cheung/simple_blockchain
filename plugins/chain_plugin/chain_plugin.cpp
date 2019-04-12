@@ -8,6 +8,24 @@
 namespace eosio {
    static appbase::abstract_plugin& _chain_plugin = app().register_plugin<chain_plugin>();
 
+
+#define CATCH_AND_CALL(NEXT)\
+   catch ( const fc::exception& err ) {\
+      NEXT(err.dynamic_copy_exception());\
+   } catch ( const std::exception& e ) {\
+      fc::exception fce( \
+         FC_LOG_MESSAGE( warn, "rethrow ${what}: ", ("what",e.what())),\
+         fc::std_exception_code,\
+         BOOST_CORE_TYPEID(e).name(),\
+         e.what() ) ;\
+      NEXT(fce.dynamic_copy_exception());\
+   } catch( ... ) {\
+      fc::unhandled_exception e(\
+         FC_LOG_MESSAGE(warn, "rethrow"),\
+         std::current_exception());\
+      NEXT(e.dynamic_copy_exception());\
+   }
+
 class chain_plugin_impl {
 public:
 
@@ -58,4 +76,27 @@ Controller& chain_plugin::chain() { return *my->chain; }
 
 const Controller& chain_plugin::chain() const { return *my->chain; }
 
+
+namespace chain_apis{
+
+   read_only::get_info_results read_only::get_info(const get_info_params& p)
+   {
+      return {"hahaha"};
+   }
+
+
+
+   void read_write::push_transaction(const read_write::push_transaction_params& p, next_function<push_transaction_results> next)
+   {
+      try{
+         next(push_transaction_results{"hello,this is result1", "hello,this is result2"});
+      }
+      CATCH_AND_CALL(next)
+   }
+
 }
+
+
+}
+
+

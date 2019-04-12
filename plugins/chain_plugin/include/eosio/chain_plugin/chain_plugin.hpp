@@ -9,32 +9,52 @@ namespace eosio {
 
 using namespace appbase;
 
-/**
- *  This is a template plugin, intended to serve as a starting point for making new plugins
- */
+template<typename T>
+using next_function = std::function<void(const fc::static_variant<fc::exception_ptr, T>&)>;
+
+
+
 namespace chain_apis
 {
+   struct empty{};
    class read_only
    {
-   private:
-      /* data */
    public:
-      read_only(/* args */);
-      ~read_only();
+      struct get_info_results
+      {
+         std::string info;
+      };
+
+      using get_info_params = empty; 
+      get_info_results get_info(const get_info_params& p);
+      
+      read_only() = default;
+      ~read_only() = default;
       void validate() const {}
    };
 
    class read_write
    {
-   private:
-      /* data */
    public:
-      read_write(/* args */);
-      ~read_write();
+      struct push_transaction_params
+      {
+         std::string p1;
+         std::string p2;
+      };
+
+      struct push_transaction_results
+      {
+         std::string res1;
+         std::string res2;
+      };
+
+      void push_transaction(const push_transaction_params& p, next_function<push_transaction_results> next);
+
+      read_write() = default;
+      ~read_write() = default;
+      void validate() const {}
    };
 }
-
-
 
 class chain_plugin : public appbase::plugin<chain_plugin> {
 public:
@@ -58,3 +78,8 @@ private:
 };
 
 }
+
+FC_REFLECT(eosio::chain_apis::empty,)
+FC_REFLECT(eosio::chain_apis::read_only::get_info_results, (info))
+FC_REFLECT(eosio::chain_apis::read_write::push_transaction_results, (res1)(res2))
+FC_REFLECT(eosio::chain_apis::read_write::push_transaction_params, (p1)(p2))
