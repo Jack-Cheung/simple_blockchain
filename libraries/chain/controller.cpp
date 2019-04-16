@@ -10,8 +10,11 @@ Controller::~Controller()
 {
 }
 
-void Controller::commitTrx(const Transaction& trx)
+void Controller::commitTrx(Transaction& trx)
 {
+    trx.time_point = fc::time_point::now();
+    fc::sha256 digest = trx.digest();
+    trx.signature = private_key.sign(digest);
     trx_pool.push_back(trx);
 }
 
@@ -34,4 +37,15 @@ void Controller::pushBlock()
     blk_cache.push_back(blk);
     trx_pool.clear();
     dlog("new block = ${j}",("j", fc::json::to_string(blk)));
+}
+
+fc::optional<Block> Controller::getBlock(uint64_t num) const
+{
+    auto itr = std::find_if(blk_cache.begin(), blk_cache.end(), [num](auto& elem)->bool {
+        return elem.blk_num == num;
+    });
+    if (itr != blk_cache.end()) {
+        return *itr;
+    }
+    return fc::optional<Block>();
 }

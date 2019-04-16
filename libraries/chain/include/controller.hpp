@@ -12,8 +12,10 @@ private:
 public:
     Controller();
     ~Controller();
-    void commitTrx(const Transaction& trx);
+    void commitTrx(Transaction& trx);
     void pushBlock();
     void replayBlock();
+    fc::optional<Block> getBlock(uint64_t num) const;
+    fc::variant getInfo() const;
 };
 
