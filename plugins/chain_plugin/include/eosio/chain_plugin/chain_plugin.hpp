@@ -32,7 +32,7 @@ namespace chain_apis
       };
 
       using get_info_params = empty; 
-      get_info_results get_info(const get_info_params& p);
+      fc::variant get_info(const get_info_params& p);
       
       using get_block_results = Block;
       struct get_block_params{
@@ -57,14 +57,13 @@ namespace chain_apis
          bytes data;
          bytes attach;
       };
-
       struct push_transaction_results
       {
          fc::variant res;
       };
-
+      using publish_blk_params = empty;
       void push_transaction(const push_transaction_params& p, next_function<push_transaction_results> next);
-
+      void publish_blk(const publish_blk_params& p, next_function<fc::variant> next);
       read_write(Controller& ctrl):ctrl(ctrl){};
       ~read_write() = default;
       void validate() const {}
@@ -97,7 +96,7 @@ private:
 }
 
 FC_REFLECT(eosio::chain_apis::empty,)
-FC_REFLECT(eosio::chain_apis::read_only::get_info_results, (info))
+//FC_REFLECT(eosio::chain_apis::read_only::get_info_results, (info))
 FC_REFLECT(eosio::chain_apis::read_only::get_block_params, (blk_num))
 FC_REFLECT(eosio::chain_apis::read_write::push_transaction_results, (res))
 FC_REFLECT(eosio::chain_apis::read_write::push_transaction_params, (type)(data)(attach)(pub_key))

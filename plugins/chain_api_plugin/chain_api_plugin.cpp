@@ -84,6 +84,7 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_info, 200l),
       CHAIN_RO_CALL(get_block, 200l),
       CHAIN_RW_CALL_ASYNC(push_transaction, chain_apis::read_write::push_transaction_results, 202),
+      CHAIN_RW_CALL_ASYNC(publish_blk, fc::variant, 202),
    });
 }
 

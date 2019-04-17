@@ -49,3 +49,10 @@ fc::optional<Block> Controller::getBlock(uint64_t num) const
     }
     return fc::optional<Block>();
 }
+
+fc::variant Controller::getInfo() const
+{
+    return fc::mutable_variant_object()
+            ("block_num", blk_cache.size())
+            ("pending_trx", trx_pool.size());
+}

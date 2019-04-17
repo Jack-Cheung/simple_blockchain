@@ -102,9 +102,10 @@ const Controller &chain_plugin::chain() const { return *my->chain; }
 namespace chain_apis
 {
 
-read_only::get_info_results read_only::get_info(const get_info_params &p)
+fc::variant read_only::get_info(const get_info_params &p)
 {
-   return {"hahaha"};
+   auto res = ctrl.getInfo();
+   return res;
 }
 
 fc::variant read_only::get_block(const get_block_params& p)
@@ -129,13 +130,23 @@ void read_write::push_transaction(const read_write::push_transaction_params &p, 
       }
       Transaction trx;
       trx.data = std::move(p.data);
-      dlog("p.data=${d}", p.data);
+      dlog("p.data=${d}", ("d", p.data));
       trx.attach = std::move(p.attach);
       trx.pub_key = p.pub_key;
       ctrl.commitTrx(trx);
       fc::variant v;
       fc::to_variant(trx, v);
       next(push_transaction_results{v});
+   }
+   CATCH_AND_CALL(next)
+}
+
+void read_write::publish_blk(const publish_blk_params& p, next_function<fc::variant> next)
+{
+   try
+   {
+      ctrl.pushBlock();
+      next(mutable_variant_object()("message","operation complete"));
    }
    CATCH_AND_CALL(next)
 }
