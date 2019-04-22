@@ -146,7 +146,7 @@ void read_write::publish_blk(const publish_blk_params& p, next_function<fc::vari
    try
    {
       ctrl.pushBlock();
-      next(mutable_variant_object()("message","operation complete"));
+      next(fc::variant(fc::mutable_variant_object()("message","operation complete")));
    }
    CATCH_AND_CALL(next)
 }
