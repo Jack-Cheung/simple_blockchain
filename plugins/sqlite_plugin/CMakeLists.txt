@@ -1,4 +1,4 @@
-set(DB_PATH "./test.db")
+set(DB_PATH "${DATA_FOLDER}/blocks.db")
 configure_file(config.hpp.ini "include/eoso/sqlite_plugin/config.hpp" ESCAPE_QUOTES @ONLY)
 file(GLOB HEADERS "include/eosio/sqlite_plugin/*.hpp")
 add_library( sqlite_plugin

@@ -12,19 +12,22 @@ Controller::~Controller()
 
 void Controller::commitTrx(Transaction& trx)
 {
-    trx.time_point = fc::time_point::now();
-    fc::sha256 digest = trx.digest();
-    trx.signature = private_key.sign(digest);
+    //TODO  wrong signature! should be signed at client side and with user's private key
+    //trx.time_point = fc::time_point::now();
+    //fc::sha256 digest = trx.digest();
+    //trx.signature = private_key.sign(digest);
     trx_pool.push_back(trx);
 }
 
-void Controller::pushBlock()
+Block Controller::pushBlock()
 {
     Block blk;
     if ( blk_cache.size() > 0 ) 
     {
         Block& last_blk = blk_cache.back();
-        blk.prior_hash = fc::sha256::hash(last_blk.digest());
+        //TODO  not tend to calculate hash's hash
+        //blk.prior_hash = fc::sha256::hash(last_blk.digest());
+        blk.prior_hash = last_blk.digest();
         blk.blk_num = last_blk.blk_num + 1;
     }
     else
@@ -37,6 +40,7 @@ void Controller::pushBlock()
     blk_cache.push_back(blk);
     trx_pool.clear();
     dlog("new block = ${j}",("j", fc::json::to_string(blk)));
+    return blk;
 }
 
 fc::optional<Block> Controller::getBlock(uint64_t num) const
@@ -55,4 +59,9 @@ fc::variant Controller::getInfo() const
     return fc::mutable_variant_object()
             ("block_num", blk_cache.size())
             ("pending_trx", trx_pool.size());
+}
+
+void Controller::replayBlock(std::vector<Block>&& blocks)
+{
+    blk_cache = std::forward<std::vector<Block>>(blocks);
 }

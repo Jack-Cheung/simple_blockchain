@@ -166,6 +166,8 @@ endif()
 
 message( STATUS "Using '${EOSIO_ROOT_KEY}' as public key for 'eosio' account" )
 
+set(DATA_FOLDER "/usr/opt/block_chain")
+
 add_subdirectory( libraries )
 add_subdirectory( plugins )
 add_subdirectory( programs )

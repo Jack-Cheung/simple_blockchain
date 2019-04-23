@@ -55,6 +55,8 @@ namespace chain_apis
       {
          uint32_t type;
          fc::crypto::public_key pub_key;
+         fc::crypto::signature signature;
+         fc::time_point_sec time_point;
          bytes data;
          bytes attach;
       };
@@ -97,7 +99,6 @@ private:
 }
 
 FC_REFLECT(eosio::chain_apis::empty,)
-//FC_REFLECT(eosio::chain_apis::read_only::get_info_results, (info))
 FC_REFLECT(eosio::chain_apis::read_only::get_block_params, (blk_num))
 FC_REFLECT(eosio::chain_apis::read_write::push_transaction_results, (res))
-FC_REFLECT(eosio::chain_apis::read_write::push_transaction_params, (type)(data)(attach)(pub_key))
+FC_REFLECT(eosio::chain_apis::read_write::push_transaction_params, (type)(data)(attach)(pub_key)(signature)(time_point))

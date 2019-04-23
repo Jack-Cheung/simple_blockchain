@@ -12,14 +12,18 @@ class sqlite_plugin_impl {
       void db_open();
       void db_close();
 
-      void get_block(uint64_t num);
+      fc::optional<Block> get_block(uint64_t num);
+      std::vector<Block> get_all_blocks();
       //void get_block(fc::sha256 h);
-      void append_block(std::string json);
+      void append_block(uint64_t id, fc::sha256 hash, std::string json);
    private:
-      static int append_block_callback(void *NotUsed, int argc, char **argv, char **azColName);
+      static int get_block_callback(void *NotUsed, int argc, char **argv, char **azColName);
    private:
       sqlite3* db;
+      static std::vector<Block> tmp_blks;
 };
+
+std::vector<Block> sqlite_plugin_impl::tmp_blks;
 
 sqlite_plugin::sqlite_plugin():my(new sqlite_plugin_impl()){}
 sqlite_plugin::~sqlite_plugin(){}
@@ -43,9 +47,6 @@ void sqlite_plugin::plugin_initialize(const variables_map& options) {
 void sqlite_plugin::plugin_startup() {
    dlog("hello!");
    my->db_open();
-   //std::string json = "{\"num\":1,\"trx\":[{\"id\":1,\"content\":\"FFF3390\"},{\"id\":2,\"content\":\"EE9876443\"}]}";
-   //my->append_block(json);
-   my->get_block(1);
 }
 
 void sqlite_plugin::plugin_shutdown() {
@@ -55,14 +56,21 @@ void sqlite_plugin::plugin_shutdown() {
 
 void sqlite_plugin::append_block(const Block &block){
    std::string json = fc::json::to_string(block);
-   my->append_block(json);
+   my->append_block(block.blk_num, block.digest(), json);
 }
 
 void sqlite_plugin::get_block(uint64_t num){
    my->get_block(num);
 }
 
+std::vector<Block> sqlite_plugin::get_all_blocks()
+{
+   return my->get_all_blocks();
+}
 
+
+
+//////plugin_impl
 void sqlite_plugin_impl::db_open(){
    int ret = sqlite3_open(DB_PATH, &db);
    dlog("db path=${p}", ("p", DB_PATH));
@@ -75,20 +83,29 @@ void sqlite_plugin_impl::db_close(){
    sqlite3_close(db);
 }
 
-int sqlite_plugin_impl::append_block_callback(void *NotUsed, int argc, char **argv, char **azColName){
-   int i;
-   for(i=0; i<argc; i++){
+int sqlite_plugin_impl::get_block_callback(void *NotUsed, int argc, char **argv, char **azColName){
+
+   for(int i = 0; i < argc; i++){
       dlog("${n} = ${v}", ("n", azColName[i])("v", argv[i] ? argv[i] : "NULL"));
+      if (std::string(azColName[i]) == "JSON") {
+         FC_ASSERT(argv[i], "can not get JSON value!");
+         std::string json = argv[i];
+         fc::variant v = fc::json::from_string(json);
+         Block blk;
+         fc::from_variant(v, blk);
+         tmp_blks.push_back(blk);
+      }
+      dlog(" ${b}", ("b", tmp_blks));
    }
    return 0;
 }
 
-void sqlite_plugin_impl::append_block(std::string json){
+void sqlite_plugin_impl::append_block(uint64_t id, fc::sha256 hash, std::string json){
    char* zErrMsg = NULL;
    std::string sql = "INSERT INTO BLOCK (ID,HASH,JSON) "  \
-         "VALUES(1,'FFFF33','" + json + "');";
+         "VALUES(" + std::to_string(id) + ",'" + std::string(hash) + "','" + json + "');";
    dlog("sql = ${s}", ("s", sql));
-   int rc = sqlite3_exec(db, sql.c_str(), append_block_callback, 0, &zErrMsg);
+   int rc = sqlite3_exec(db, sql.c_str(), get_block_callback, 0, &zErrMsg);
    if( rc != SQLITE_OK ){
       elog("SQL error: ${e}\n", ("e", zErrMsg));
       sqlite3_free(zErrMsg);
@@ -97,18 +114,36 @@ void sqlite_plugin_impl::append_block(std::string json){
    }
 }
 
-void sqlite_plugin_impl::get_block(uint64_t num){
+fc::optional<Block> sqlite_plugin_impl::get_block(uint64_t num){
    char* zErrMsg = NULL;
    std::string sql = "SELECT JSON FROM BLOCK WHERE ID=" + std::to_string(num) + ";";
    dlog("sql = ${s}", ("s", sql));
-   int rc = sqlite3_exec(db, sql.c_str(), append_block_callback, 0, &zErrMsg);
+   tmp_blks.clear();
+   int rc = sqlite3_exec(db, sql.c_str(), get_block_callback, 0, &zErrMsg);
    if( rc != SQLITE_OK ){
       elog("SQL error: ${e}\n", ("e", zErrMsg));
       sqlite3_free(zErrMsg);
+      return fc::optional<Block>();
    }else{
       dlog("Records created successfully");
    }
+   FC_ASSERT(tmp_blks.size() == 1, " !!!");
+   return fc::optional<Block>(tmp_blks.at(0));
 }
 
+std::vector<Block> sqlite_plugin_impl::get_all_blocks(){
+   char* zErrMsg = NULL;
+   std::string sql = "SELECT JSON FROM BLOCK;";
+   tmp_blks.clear();
+   int rc = sqlite3_exec(db, sql.c_str(), get_block_callback, 0, &zErrMsg);
+   if( rc != SQLITE_OK ){
+      elog("SQL error: ${e}\n", ("e", zErrMsg));
+      sqlite3_free(zErrMsg);
+      return std::vector<Block>();
+   }else{
+      dlog("Records created successfully");
+   }
+   return tmp_blks;
+}
 
 }

@@ -20,7 +20,7 @@ void Transaction::fillTestData()
     dlog("public key from sig=${pk}", ("pk", k));
 }
 
-fc::sha256 Transaction::digest()
+fc::sha256 Transaction::digest() const
 {
     fc::sha256::encoder  enc;
     fc::raw::pack(enc, time_point);

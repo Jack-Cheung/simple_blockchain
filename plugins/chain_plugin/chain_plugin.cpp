@@ -88,6 +88,11 @@ void chain_plugin::plugin_startup()
    c.commitTrx(t2);
    c.commitTrx(t2);
    c.pushBlock();*/
+   sqlite_plugin* db = app().find_plugin<sqlite_plugin>();
+   //std::vector<Block> blks = std::move(db->get_all_blocks());
+   //dlog("replayed blocks = ${b}", ("b", blks));
+   c.replayBlock(db->get_all_blocks());
+   //c->replayBlock();
    
 }
 
@@ -127,13 +132,15 @@ void read_write::push_transaction(const read_write::push_transaction_params &p, 
    {
       if (p.type == 0 || p.data.empty())
       {
-         FC_THROW_EXCEPTION(fc::trx_invalid_arg_exception,"p1 is empty");
+         FC_THROW_EXCEPTION(fc::trx_invalid_arg_exception,"transaction is not acceptable");
       }
       Transaction trx;
       trx.data = std::move(p.data);
       dlog("p.data=${d}", ("d", p.data));
       trx.attach = std::move(p.attach);
       trx.pub_key = p.pub_key;
+      trx.signature = p.signature;
+      trx.time_point = p.time_point;
       ctrl.commitTrx(trx);
       fc::variant v;
       fc::to_variant(trx, v);
@@ -146,7 +153,9 @@ void read_write::publish_blk(const publish_blk_params& p, next_function<fc::vari
 {
    try
    {
-      ctrl.pushBlock();
+      Block last_blk = ctrl.pushBlock();
+      sqlite_plugin* plugin = app().find_plugin<sqlite_plugin>();
+      plugin->append_block(last_blk);
       next(fc::variant(fc::mutable_variant_object()("message","operation complete")));
    }
    CATCH_AND_CALL(next)

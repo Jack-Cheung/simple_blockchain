@@ -13,8 +13,8 @@ public:
     Controller();
     ~Controller();
     void commitTrx(Transaction& trx);
-    void pushBlock();
-    void replayBlock();
+    Block pushBlock();
+    void replayBlock(std::vector<Block>&& blocks);
     fc::optional<Block> getBlock(uint64_t num) const;
     fc::variant getInfo() const;
 };
