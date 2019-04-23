@@ -41,16 +41,31 @@ void sqlite_plugin::plugin_initialize(const variables_map& options) {
 }
 
 void sqlite_plugin::plugin_startup() {
+   dlog("hello!");
    my->db_open();
-
+   //std::string json = "{\"num\":1,\"trx\":[{\"id\":1,\"content\":\"FFF3390\"},{\"id\":2,\"content\":\"EE9876443\"}]}";
+   //my->append_block(json);
+   my->get_block(1);
 }
 
 void sqlite_plugin::plugin_shutdown() {
    // OK, that's enough magic
+   my->db_close();
 }
+
+void sqlite_plugin::append_block(const Block &block){
+   std::string json = fc::json::to_string(block);
+   my->append_block(json);
+}
+
+void sqlite_plugin::get_block(uint64_t num){
+   my->get_block(num);
+}
+
 
 void sqlite_plugin_impl::db_open(){
    int ret = sqlite3_open(DB_PATH, &db);
+   dlog("db path=${p}", ("p", DB_PATH));
    if (ret) {
       elog("error happened: ${e}", ("e", sqlite3_errmsg(db)));
    }
@@ -70,16 +85,10 @@ int sqlite_plugin_impl::append_block_callback(void *NotUsed, int argc, char **ar
 
 void sqlite_plugin_impl::append_block(std::string json){
    char* zErrMsg = NULL;
-   const char* sql = "INSERT INTO BLOCK (ID,HASH,JSON) "  \
-         "VALUES(1,'FFFF33','{\"num\":1,\"trx\":[{\"id\":1,\"content\":\"FFF3390\"},{\"id\":2,\"content\":\"EE9876443\"}]}');";
-   /* Execute SQL statement */
-
-   /*
-   INSERT INTO BLOCK (ID,HASH,JSON) VALUES (1, 'FFFF33', '{"num":1, "trx":[{"id":1, "content":"FFF3390"},{"id":2, "content":"EE9876443"}]}');
-   
-   
-   */
-   int rc = sqlite3_exec(db, sql, append_block_callback, 0, &zErrMsg);
+   std::string sql = "INSERT INTO BLOCK (ID,HASH,JSON) "  \
+         "VALUES(1,'FFFF33','" + json + "');";
+   dlog("sql = ${s}", ("s", sql));
+   int rc = sqlite3_exec(db, sql.c_str(), append_block_callback, 0, &zErrMsg);
    if( rc != SQLITE_OK ){
       elog("SQL error: ${e}\n", ("e", zErrMsg));
       sqlite3_free(zErrMsg);
@@ -87,5 +96,19 @@ void sqlite_plugin_impl::append_block(std::string json){
       dlog("Records created successfully");
    }
 }
+
+void sqlite_plugin_impl::get_block(uint64_t num){
+   char* zErrMsg = NULL;
+   std::string sql = "SELECT JSON FROM BLOCK WHERE ID=" + std::to_string(num) + ";";
+   dlog("sql = ${s}", ("s", sql));
+   int rc = sqlite3_exec(db, sql.c_str(), append_block_callback, 0, &zErrMsg);
+   if( rc != SQLITE_OK ){
+      elog("SQL error: ${e}\n", ("e", zErrMsg));
+      sqlite3_free(zErrMsg);
+   }else{
+      dlog("Records created successfully");
+   }
+}
+
 
 }

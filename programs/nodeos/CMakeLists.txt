@@ -49,5 +49,5 @@ target_link_libraries( ${NODE_EXECUTABLE_NAME}
 #        PRIVATE -Wl,${whole_archive_flag} test_control_plugin        -Wl,${no_whole_archive_flag}
 #        PRIVATE -Wl,${whole_archive_flag} test_control_api_plugin    -Wl,${no_whole_archive_flag}
 #        PRIVATE -Wl,${build_id_flag}
-        PRIVATE  http_plugin  chain_plugin chain_api_plugin sqlite_plugin
+        PRIVATE  http_plugin  chain_plugin chain_api_plugin sqlite_plugin 
         PRIVATE  fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )

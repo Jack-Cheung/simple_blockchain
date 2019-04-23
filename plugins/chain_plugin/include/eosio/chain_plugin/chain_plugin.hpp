@@ -4,6 +4,7 @@
  */
 #pragma once
 #include <appbase/application.hpp>
+#include <eosio/sqlite_plugin/sqlite_plugin.hpp>
 #include <controller.hpp>
 
 namespace fc{
@@ -77,7 +78,7 @@ public:
    chain_plugin();
    virtual ~chain_plugin();
  
-   APPBASE_PLUGIN_REQUIRES()
+   APPBASE_PLUGIN_REQUIRES((sqlite_plugin))
    virtual void set_program_options(options_description&, options_description& cfg) override;
  
    void plugin_initialize(const variables_map& options);

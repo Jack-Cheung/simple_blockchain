@@ -77,7 +77,7 @@ void chain_plugin::plugin_startup()
    dlog("chain_plugin startup");
    FC_ASSERT(my->chain, "controller object is nullopt");
    Controller& c = *my->chain;
-   std::vector<Transaction> trxs;
+   /*std::vector<Transaction> trxs;
    Transaction t1;
    t1.fillTestData();
    Transaction t2;
@@ -87,7 +87,8 @@ void chain_plugin::plugin_startup()
    c.pushBlock();
    c.commitTrx(t2);
    c.commitTrx(t2);
-   c.pushBlock();
+   c.pushBlock();*/
+   
 }
 
 void chain_plugin::plugin_shutdown()
