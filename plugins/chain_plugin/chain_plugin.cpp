@@ -7,6 +7,7 @@
 
 namespace fc
 {
+   //TODO if not used, remove it
    string from_hex(const std::vector<char>& vec)
    {
       string ret;
