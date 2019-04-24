@@ -20,13 +20,13 @@ void tool_plugin::set_program_options(options_description &, options_description
 {
    cfg.add_options()("keygen", bpo::value<string>(),
                      "Generate key");
-   cfg.add_options()("h2c", bpo::value<string>()->required(),
+   cfg.add_options()("h2c", bpo::value<string>(),
                      "hex char to ascii char");
-   cfg.add_options()("c2h", bpo::value<string>()->required(),
+   cfg.add_options()("c2h", bpo::value<string>(),
                      "ascii char to hex char");
-   cfg.add_options()("sign", bpo::value<string>()->required(),
+   cfg.add_options()("sign", bpo::value<string>(),
                      "sign transaction");
-   cfg.add_options()("key", bpo::value<string>()->required(),
+   cfg.add_options()("key", bpo::value<string>(),
                      "the private key used to sign transaction");
 }
 
@@ -126,8 +126,9 @@ void tool_plugin::sign_transaction()
    sha256 digest = tx.digest();
    private_key pri_key(key);
    tx.signature = pri_key.sign(digest);
-   to_variant(tx,v);
-   dlog("SIGNED TRANSACTION: ${j}\n", ("j", json::to_string(v)));
+   tx.pub_key = pri_key.get_public_key();
+  // to_variant(tx,v);
+   dlog("SIGNED TRANSACTION: ${j}\n", ("j", json::to_string(tx)));
 }
 
 } // namespace eosio
