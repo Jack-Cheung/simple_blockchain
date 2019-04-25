@@ -123,18 +123,76 @@ fc::variant read_only::get_block(const get_block_params& p)
       fc::to_variant(*blk, v);
       return v;
    }
+   //TODO get block from database
    return fc::mutable_variant_object()
          ("error", "block not found");
 }
+
+TO_REMOVED std::vector<fc::variant> read_only::get_keys(const get_keys_params&){
+   using namespace fc::crypto;
+   using namespace fc;
+   auto key = private_key::generate<ecc::private_key_shim>();
+   auto pub = key.get_public_key();
+   dlog("PUBLIC KEY: ${pub}\nPRIVATE KEY: ${pri}\n", ("pub", pub)("pri", key));
+   variant keyv, pubv;
+   to_variant(key, keyv);
+   to_variant(pub, pubv);
+   std::vector<variant> vec;
+   vec.push_back(pubv);
+   vec.push_back(keyv);
+   return vec;
+}
+
+TO_REMOVED std::string read_only::hex2char(const hex2char_params& p){
+   using namespace fc::crypto;
+   using namespace fc;
+   string hex = p.hex;
+   char* out_data = new char[1024]{0};
+   size_t len = from_hex(hex, out_data, 1024);
+   dlog("ASCII CHARS: ${c}\n", ("c", out_data));
+   std::string ret = out_data;
+   delete[] out_data;
+   return ret;
+}
+
+TO_REMOVED std::string read_only::char2hex(const char2hex_params& p){
+   using namespace fc::crypto;
+   using namespace fc;
+   std::string str = p.str;
+   std::string hex = fc::to_hex(str.c_str(), str.size());
+   dlog("HEX CHARS: ${h}\n",("h", hex));
+   return hex;
+}
+
+TO_REMOVED fc::variant read_only::sign_trx(const sign_trx_params& p){
+   using namespace fc::crypto;
+   using namespace fc;
+   try
+   {
+      Transaction tx;
+      std::string key = p.key;
+      from_variant(p.trx, tx);
+      sha256 digest = tx.digest();
+      private_key pri_key(key);
+      tx.signature = pri_key.sign(digest);
+      tx.pub_key = pri_key.get_public_key();
+      variant v;
+      to_variant(tx,v);
+      dlog("SIGNED TRANSACTION: ${j}\n", ("j", json::to_string(tx)));
+      return v;  
+   }
+   catch(const fc::exception& e)
+   {
+      std::cerr << e.what() << '\n';
+   }
+   return fc::variant();
+}
+
 
 void read_write::push_transaction(const read_write::push_transaction_params &p, next_function<push_transaction_results> next)
 {
    try
    {
-      if (p.type == 0 || p.data.empty())
-      {
-         FC_THROW_EXCEPTION(fc::trx_invalid_arg_exception,"transaction is not acceptable");
-      }
       Transaction trx;
       trx.data = std::move(p.data);
       dlog("p.data=${d}", ("d", p.data));
@@ -142,6 +200,10 @@ void read_write::push_transaction(const read_write::push_transaction_params &p, 
       trx.pub_key = p.pub_key;
       trx.signature = p.signature;
       trx.time_point = p.time_point;
+      if (!trx.validate())
+      {
+         FC_THROW_EXCEPTION(fc::trx_invalid_arg_exception,"transaction is not acceptable");
+      }
       ctrl.commitTrx(trx);
       fc::variant v;
       fc::to_variant(trx, v);

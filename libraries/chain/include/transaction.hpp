@@ -15,8 +15,8 @@ public:
     fc::crypto::signature signature;
     fc::crypto::public_key pub_key;
     
-    void fillTestData();
     fc::sha256 digest() const;
+    bool validate() const;
 };
 
 FC_REFLECT(Transaction, (time_point)(data)(attach)(signature)(pub_key))

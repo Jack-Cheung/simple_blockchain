@@ -1,25 +1,5 @@
 #include "transaction.hpp"
 
-void Transaction::fillTestData()
-{
-    time_point = fc::time_point::now();
-    std::string str = "this is test data";
-    data.assign(str.cbegin(), str.cend());
-    str = "this is test attach";
-    attach.assign(str.cbegin(), str.cend());
-    fc::crypto::public_key  pub_k;
-    fc::crypto::private_key priv_k;
-    priv_k = fc::crypto::private_key::generate<fc::ecc::private_key_shim>();
-    this->pub_key = priv_k.get_public_key();
-    dlog("public_key = ${pubk}, private_key= ${privk}", ("pubk", this->pub_key)("privk", priv_k));
-    fc::sha256 dgst = digest();
-    dlog("digest=${d}", ("d", dgst));
-    signature = priv_k.sign(dgst);
-    dlog("signature=${s}", ("s", signature));
-    fc::crypto::public_key k = fc::crypto::public_key(signature, dgst);
-    dlog("public key from sig=${pk}", ("pk", k));
-}
-
 fc::sha256 Transaction::digest() const
 {
     fc::sha256::encoder  enc;
@@ -28,4 +8,19 @@ fc::sha256 Transaction::digest() const
     fc::raw::pack(enc, data);
     fc::raw::pack(enc, pub_key);
     return enc.result();
+}
+
+bool Transaction::validate() const
+{
+    //TODO  it is also needed to examin that if the time is too delay, the program's now time is not right
+    if (0 == data.size()) {
+        wlog("transaction without data");
+        return false;
+    }
+    if (fc::crypto::signature() == signature) {
+        wlog("a blank signature");
+        return false;
+    }
+    auto recover_key = fc::crypto::public_key(signature, digest());
+    return recover_key == pub_key;
 }

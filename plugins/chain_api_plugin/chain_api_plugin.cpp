@@ -83,6 +83,12 @@ void chain_api_plugin::plugin_startup() {
    _http_plugin.add_api({
       CHAIN_RO_CALL(get_info, 200l),
       CHAIN_RO_CALL(get_block, 200l),
+
+      CHAIN_RO_CALL(get_keys, 200l),
+      CHAIN_RO_CALL(hex2char, 200l),
+      CHAIN_RO_CALL(char2hex, 200l),
+      CHAIN_RO_CALL(sign_trx, 200l),
+
       CHAIN_RW_CALL_ASYNC(push_transaction, chain_apis::read_write::push_transaction_results, 202),
       CHAIN_RW_CALL_ASYNC(publish_blk, fc::variant, 202),
    });
