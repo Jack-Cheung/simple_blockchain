@@ -20,19 +20,28 @@
     http://127.0.0.1:8888/v1/chain/push_transaction<br>
     time point:<input type="text" value="2019-04-23T06:21:34" id="time_point"/><br>
     交易数据:<input type="text" value="7468697320697320746573742064617461" id="data"/><br>
-    signature:<input type="text" value="SIG_K1_KcLQtf5UjwEKggPA22gaLDx1TwBqGmDhwWJdPam9Dhzh38YmEF3wRNGRS1J9Wjd6eCkHwAa8JvCXu3vKpJNFv5wFUswJZT" id="signature"/><br>
-    发起交易者的公钥:<input type="text" value="EOS8APcg6ta4hvwiqk5Xtf7djakytDoWQQAdAD938e6d5YeXNkDef" id="pub_key"/><br>
+    attach:<input type="text" value="74686973206973207465737420617474616368" id="attach"/><br>
+    signature:<input type="text" value="SIG_K1_KfgNkBgEQppxa1DJGupnEWdKzukgVSbRw5VSWEbTiNQbbSjAMkAuoiwXLt3AXyzPFFNt4WHpaqF4BT4TT8mb8MEGJDbVdr" id="signature"/><br>
+    发起交易者的公钥:<input type="text" value="EOS6BJDmPWMuHLTKWAVzBNMWJWwZ5Shk8NHwYryrbBtAs2SVALvpZ" id="pub_key"/><br>
     <button type="button" id="push_transaction_btn">发布交易</button><br><br>
 
 ===========================================================================<br><br>
     http://127.0.0.1:8888/v1/chain/sign_trx<br>
     time point:<input type="text" value="2019-04-23T06:21:34" id="sign_time_point"/><br>
     交易数据:<input type="text" value="7468697320697320746573742064617461" id="sign_data"/><br>
-    private key:<input type="text" value="5HwLWM8J46qbpZDMYsSGDxWN9EkusGwGP1EH5eFJKYvasuW83yX" id="sign_priv_key"/><br>
+    private key:<input type="text" value="5K2x8VJr7irT38ZbgsP7e4hzGT81E5LK9BmLxrN2T6GtNHKmoLB" id="sign_priv_key"/><br>
     <button type="button" id="sign_trx_btn">给交易签名</button><br><br>
  
     http://127.0.0.1:8888/v1/chain/get_keys<br>
     <button type="button" id="get_keys_btn">生成一个公私密钥对</button><br><br>
+
+    http://127.0.0.1:8888/v1/chain/char2hex<br>
+    ascii字符:<input type="text" value="today is thusday" id="ascii"/><br>
+    <button type="button" id="char2hex_btn">ascii字符转hex字符</button><br><br>
+
+    http://127.0.0.1:8888/v1/chain/hex2char<br>
+    hex字符:<input type="text" value="746f6461792069732074687573646179" id="hex"/><br>
+    <button type="button" id="hex2char_btn">hex字符转ascii字符</button><br><br>
 
  </body>
 <script src="js/jquery-2.1.4.min.js"></script>
@@ -53,14 +62,16 @@ window.onload=function(){
 //["EOS6BJDmPWMuHLTKWAVzBNMWJWwZ5Shk8NHwYryrbBtAs2SVALvpZ","5K2x8VJr7irT38ZbgsP7e4hzGT81E5LK9BmLxrN2T6GtNHKmoLB"]
 
     $("#push_transaction_btn").click(function(){
-        json = "{\"time_point\":\"2019-04-23T06:21:34\"," 
-        + "\"data\":\"7468697320697320746573742064617461\","
-        + "\"attach\":\"74686973206973207465737420617474616368\","
-        + "\"signature\":\"SIG_K1_K7m46QYjMSLNmygCcxuoxmn3hGerXtr4P73MsC1ZyDbn1mKjkAW1UiHfHwV4mGMjATQuYziTWREHqm48e9fkroFhLoHkHd\","
-        + "\"pub_key\":\"EOS6hNSYPHaJm1TBmrLHLytxjwEcX6gbVNRZe4o7DxcVL7ojH9PCZ\"}";
-//{"time_point":"2019-04-23T06:21:34","data":"7468697320697320746573742064617461","attach":"74686973206973207465737420617474616368","signature":"SIG_K1_K7m46QYjMSLNmygCcxuoxmn3hGerXtr4P73MsC1ZyDbn1mKjkAW1UiHfHwV4mGMjATQuYziTWREHqm48e9fkroFhLoHkHd","pub_key":"EOS6hNSYPHaJm1TBmrLHLytxjwEcX6gbVNRZe4o7DxcVL7ojH9PCZ"}
-json = "{\"time_point\":\"2019-04-23T06:21:34\",\"data\":\"7468697320697320746573742064617461\",\"attach\":\"74686973206973207465737420617474616368\",\"signature\":\"SIG_K1_K7m46QYjMSLNmygCcxuoxmn3hGerXtr4P73MsC1ZyDbn1mKjkAW1UiHfHwV4mGMjATQuYziTWREHqm48e9fkroFhLoHkHd\",\"pub_key\":\"EOS6hNSYPHaJm1TBmrLHLytxjwEcX6gbVNRZe4o7DxcVL7ojH9PCZ\"}";
-
+        time = $("#time_point").val();
+        data = $("#data").val();
+        signature = $("#signature").val();
+        pub_key = $("#pub_key").val();
+        attach = $("#attach").val();
+        json = "{\"time_point\":\"" + time + "\"," 
+        + "\"data\":\"" + data + "\","
+        + "\"attach\":\"" + attach + "\","
+        + "\"signature\":\"" + signature + "\","
+        + "\"pub_key\":\"" + pub_key + "\"}";
         ajax("http://127.0.0.1:8888/v1/chain/push_transaction", json, callback_print);
     });
 
@@ -76,11 +87,25 @@ json = "{\"time_point\":\"2019-04-23T06:21:34\",\"data\":\"746869732069732074657
     $("#get_keys_btn").click(function(){
         ajax("http://127.0.0.1:8888/v1/chain/get_keys", null, callback_print);
     });
+
+    $("#char2hex_btn").click(function(){
+        str = $("#ascii").val();
+        json = "{\"str\":\"" + str + "\"}";
+        ajax("http://127.0.0.1:8888/v1/chain/char2hex", json, callback_print);
+    });
+    $("#hex2char_btn").click(function(){
+        hex = $("#hex").val();
+        json = "{\"hex\":\"" + hex + "\"}";
+        ajax("http://127.0.0.1:8888/v1/chain/hex2char", json, callback_print);
+    });
 }
+
 function callback_print(res)
 {
     console.log(res);
+    alert(res);
 }
+
 function ajax(url, data, success_callback)
 {
     $.ajax({
