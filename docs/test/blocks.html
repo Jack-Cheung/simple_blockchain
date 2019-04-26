@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Block Chain Browser</title>
+  <script src="js/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript">
+window.onload=function(){
+  $.ajax({
+            url:"http://127.0.0.1:8888/v1/chain/get_info",
+            type: "GET",
+			
+            success: function (res) {
+				console.log(res);
+                $(".add").html(res.block_num);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+				console.log("error happened");
+            }
+        });
+}
+</script>
+ </head>
+ <body>
+  <span class="add"></span>
+ </body>
+</html>

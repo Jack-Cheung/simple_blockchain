@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Test RPC API</title>
+  
+ </head>
+ <body>
+    http://127.0.0.1:8888/v1/chain/get_info<br>
+    <button type="button" id="get_info_btn">查询区块链的基本信息</button><br><br>
+
+    http://127.0.0.1:8888/v1/chain/get_block<br>
+    区块号:<input type="text" value="0" id="blk_num"/><br>
+    <button type="button" id="get_block_btn">根据块号查询区块</button><br><br>
+    http://127.0.0.1:8888/v1/chain/publish_blk<br>
+    <button type="button" id="publish_blk_btn">区块上链</button><br><br>
+    http://127.0.0.1:8888/v1/chain/push_transaction<br>
+    time point:<input type="text" value="2019-04-23T06:21:34" id="time_point"/><br>
+    交易数据:<input type="text" value="7468697320697320746573742064617461" id="data"/><br>
+    signature:<input type="text" value="SIG_K1_KcLQtf5UjwEKggPA22gaLDx1TwBqGmDhwWJdPam9Dhzh38YmEF3wRNGRS1J9Wjd6eCkHwAa8JvCXu3vKpJNFv5wFUswJZT" id="signature"/><br>
+    发起交易者的公钥:<input type="text" value="EOS8APcg6ta4hvwiqk5Xtf7djakytDoWQQAdAD938e6d5YeXNkDef" id="pub_key"/><br>
+    <button type="button" id="push_transaction_btn">发布交易</button><br><br>
+
+===========================================================================<br><br>
+    http://127.0.0.1:8888/v1/chain/sign_trx<br>
+    time point:<input type="text" value="2019-04-23T06:21:34" id="sign_time_point"/><br>
+    交易数据:<input type="text" value="7468697320697320746573742064617461" id="sign_data"/><br>
+    private key:<input type="text" value="5HwLWM8J46qbpZDMYsSGDxWN9EkusGwGP1EH5eFJKYvasuW83yX" id="sign_priv_key"/><br>
+    <button type="button" id="sign_trx_btn">给交易签名</button><br><br>
+ 
+    http://127.0.0.1:8888/v1/chain/get_keys<br>
+    <button type="button" id="get_keys_btn">生成一个公私密钥对</button><br><br>
+
+ </body>
+<script src="js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+window.onload=function(){
+    $("#get_info_btn").click(function(){
+        ajax("http://127.0.0.1:8888/v1/chain/get_info", null, callback_print);
+    });
+    $("#get_block_btn").click(function(){
+        blk_num = $("#blk_num").val();
+        json = "{\"blk_num\":" + blk_num + "}";
+        ajax("http://127.0.0.1:8888/v1/chain/get_block", json, callback_print);
+    });
+    $("#publish_blk_btn").click(function(){
+        ajax("http://127.0.0.1:8888/v1/chain/publish_blk", null, callback_print);
+    });
+
+//["EOS6BJDmPWMuHLTKWAVzBNMWJWwZ5Shk8NHwYryrbBtAs2SVALvpZ","5K2x8VJr7irT38ZbgsP7e4hzGT81E5LK9BmLxrN2T6GtNHKmoLB"]
+
+    $("#push_transaction_btn").click(function(){
+        json = "{\"time_point\":\"2019-04-23T06:21:34\"," 
+        + "\"data\":\"7468697320697320746573742064617461\","
+        + "\"attach\":\"74686973206973207465737420617474616368\","
+        + "\"signature\":\"SIG_K1_K7m46QYjMSLNmygCcxuoxmn3hGerXtr4P73MsC1ZyDbn1mKjkAW1UiHfHwV4mGMjATQuYziTWREHqm48e9fkroFhLoHkHd\","
+        + "\"pub_key\":\"EOS6hNSYPHaJm1TBmrLHLytxjwEcX6gbVNRZe4o7DxcVL7ojH9PCZ\"}";
+//{"time_point":"2019-04-23T06:21:34","data":"7468697320697320746573742064617461","attach":"74686973206973207465737420617474616368","signature":"SIG_K1_K7m46QYjMSLNmygCcxuoxmn3hGerXtr4P73MsC1ZyDbn1mKjkAW1UiHfHwV4mGMjATQuYziTWREHqm48e9fkroFhLoHkHd","pub_key":"EOS6hNSYPHaJm1TBmrLHLytxjwEcX6gbVNRZe4o7DxcVL7ojH9PCZ"}
+json = "{\"time_point\":\"2019-04-23T06:21:34\",\"data\":\"7468697320697320746573742064617461\",\"attach\":\"74686973206973207465737420617474616368\",\"signature\":\"SIG_K1_K7m46QYjMSLNmygCcxuoxmn3hGerXtr4P73MsC1ZyDbn1mKjkAW1UiHfHwV4mGMjATQuYziTWREHqm48e9fkroFhLoHkHd\",\"pub_key\":\"EOS6hNSYPHaJm1TBmrLHLytxjwEcX6gbVNRZe4o7DxcVL7ojH9PCZ\"}";
+
+        ajax("http://127.0.0.1:8888/v1/chain/push_transaction", json, callback_print);
+    });
+
+//==================================================
+    $("#sign_trx_btn").click(function(){
+        json = "{\"trx\":{\"time_point\":\"2019-04-23T06:21:34\"," 
+        + "\"data\":\"7468697320697320746573742064617461\","
+        + "\"attach\":\"74686973206973207465737420617474616368\""
+        + "},\"key\":\"5K2x8VJr7irT38ZbgsP7e4hzGT81E5LK9BmLxrN2T6GtNHKmoLB\"}";
+        ajax("http://127.0.0.1:8888/v1/chain/sign_trx", json, callback_print);
+    });
+
+    $("#get_keys_btn").click(function(){
+        ajax("http://127.0.0.1:8888/v1/chain/get_keys", null, callback_print);
+    });
+}
+function callback_print(res)
+{
+    console.log(res);
+}
+function ajax(url, data, success_callback)
+{
+    $.ajax({
+            url: url,
+            type: "POST",
+            data: data,		
+            success: success_callback,
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+				console.log("error happened");
+            }
+        });
+}
+
+</script>
+</html>

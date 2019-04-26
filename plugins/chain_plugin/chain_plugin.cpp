@@ -172,8 +172,10 @@ TO_REMOVED fc::variant read_only::sign_trx(const sign_trx_params& p){
       Transaction tx;
       std::string key = p.key;
       from_variant(p.trx, tx);
+      dlog("signing trx:${trx}", ("trx", tx));
       sha256 digest = tx.digest();
       private_key pri_key(key);
+      dlog("private key user send:${k}", ("key", pri_key));
       tx.signature = pri_key.sign(digest);
       tx.pub_key = pri_key.get_public_key();
       variant v;

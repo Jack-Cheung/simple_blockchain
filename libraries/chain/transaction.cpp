@@ -22,5 +22,6 @@ bool Transaction::validate() const
         return false;
     }
     auto recover_key = fc::crypto::public_key(signature, digest());
+    dlog("recover key = ${rec}, public key = ${pub}", ("rec", recover_key)("pub", pub_key)); 
     return recover_key == pub_key;
 }
