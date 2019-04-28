@@ -5,55 +5,62 @@
   <meta name="Author" content="">
   <meta name="Keywords" content="">
   <meta name="Description" content="">
-  <title>测试 RPC API</title>
+  <title>程序流程说明</title>
  </head>
  <body>
+	<h2>step1.我是一个用户,我需要一个公钥作为自己的身份，保护好自己的私钥，不要被别人知道哦</h2><br>
+	http://127.0.0.1:8888/v1/chain/get_keys<br>
+    <button type="button" id="get_keys_btn">生成一个公私密钥对</button><br><br>
+
+	要牢记啊，如果丢失了，属于你的交易和资产再无法找回<br>
+	<h2>step2.现在我有了密钥，可以发布一个自己的交易，在这之前，我得给我的交易做个签名。</h2><br>
+    http://127.0.0.1:8888/v1/chain/sign_trx<br>
+    交易时间:<input type="text" value="2019-04-23T06:21:34" id="sign_time_point"/>eg.2019-04-23T06:21:34<br>
+    交易数据:<input type="text" value="7468697320697320746573742064617461" id="sign_data"/>
+    <button id="fill_sign_data" >&lt;-----转Hex字符串</button>
+    <input type="text" value="" id="sign_data_str" placeholder=""/>
+	&lt;----在这个输入框中填入一个人类可读的字符串<br>
+    附加信息:<input type="text" value="74686973206973207465737420617474616368" id="sign_attach"/>
+    <button id="fill_sign_attach">&lt;-----转Hex字符串</button>
+    <input type="text" value="" id="sign_attach_str" placeholder=""/>&lt;----在这个输入框中填入一个人类可读的字符串<br>
+    私钥:<input type="text" value="5K2x8VJr7irT38ZbgsP7e4hzGT81E5LK9BmLxrN2T6GtNHKmoLB" id="sign_priv_key"/>
+	&lt;----在这个输入框中填入step1中获取的密钥<br>
+    <button type="button" id="sign_trx_btn">给交易签名</button><br><br>
+ 
+	得到了一个签过名的json交易结构，把signature拷贝一下<br>
+	
+	<h2>step3.现在可以发布交易了</h2><br>
+	http://127.0.0.1:8888/v1/chain/push_transaction<br>
+	<b>下边填充的数据都是与step2对应的哦</b><br>
+    交易时间:<input type="text" value="2019-04-23T06:21:34" placeholder="yyyy-mm-ddThh:MM:ss" id="time_point"/>
+    <br>
+    交易数据:<input type="text" value="7468697320697320746573742064617461" id="data"/>
+    <!-- <button id="fill_data">&lt;-----</button>
+    <input type="text" value="" id="data_str" placeholder=""/> --><br>
+    附加信息:<input type="text" value="74686973206973207465737420617474616368" id="attach"/>
+    <!-- <button id="fill_attach">&lt;-----</button>
+    <input type="text" value="" id="attach_str" placeholder=""/> -->
+    <br>
+    交易签名:<input type="text" value="SIG_K1_KfgNkBgEQppxa1DJGupnEWdKzukgVSbRw5VSWEbTiNQbbSjAMkAuoiwXLt3AXyzPFFNt4WHpaqF4BT4TT8mb8MEGJDbVdr" id="signature"/><br>
+    发起交易者的公钥:<input type="text" value="EOS6BJDmPWMuHLTKWAVzBNMWJWwZ5Shk8NHwYryrbBtAs2SVALvpZ" id="pub_key"/>
+	&lt;----在这个输入框中填入step1中获取的公钥
+	<br>
+    <button type="button" id="push_transaction_btn">发布交易</button><br><br>
+	
+	<b>是不是发布交易成功了，你还可以多发布几个</b><br>
+	<b>这些交易都被缓存在服务器中了</b><br><br>
+	
+	<h2>step4.现在我想将服务器上缓存的全部交易打包成一个区块</h2>
+    http://127.0.0.1:8888/v1/chain/publish_blk<br>
+    <button type="button" id="publish_blk_btn">区块上链</button><br><br>	
+
+	<h2>step5.可以随时用下面两个接口来查询一下当前的区块链状态</h2>
     http://127.0.0.1:8888/v1/chain/get_info<br>
     <button type="button" id="get_info_btn">查询区块链的基本信息</button><br><br>
 
     http://127.0.0.1:8888/v1/chain/get_block<br>
     区块号:<input type="text" value="0" id="blk_num"/><br>
     <button type="button" id="get_block_btn">根据块号查询区块</button><br><br>
-    http://127.0.0.1:8888/v1/chain/publish_blk<br>
-    <button type="button" id="publish_blk_btn">区块上链</button><br><br>
-    http://127.0.0.1:8888/v1/chain/push_transaction<br>
-    交易时间:<input type="text" value="2019-04-23T06:21:34" placeholder="yyyy-mm-ddThh:MM:ss" id="time_point"/>
-    <br>
-    交易数据:<input type="text" value="7468697320697320746573742064617461" id="data"/>
-    <button id="fill_data">&lt;-----</button>
-    <input type="text" value="" id="data_str" placeholder=""/><br>
-    附加数据:<input type="text" value="74686973206973207465737420617474616368" id="attach"/>
-    <button id="fill_attach">&lt;-----</button>
-    <input type="text" value="" id="attach_str" placeholder=""/>
-    <br>
-    交易签名:<input type="text" value="SIG_K1_KfgNkBgEQppxa1DJGupnEWdKzukgVSbRw5VSWEbTiNQbbSjAMkAuoiwXLt3AXyzPFFNt4WHpaqF4BT4TT8mb8MEGJDbVdr" id="signature"/><br>
-    发起交易者的公钥:<input type="text" value="EOS6BJDmPWMuHLTKWAVzBNMWJWwZ5Shk8NHwYryrbBtAs2SVALvpZ" id="pub_key"/><br>
-    <button type="button" id="push_transaction_btn">发布交易</button><br><br>
-
-===========================================================================<br><br>
-
-    http://127.0.0.1:8888/v1/chain/sign_trx<br>
-    交易时间:<input type="text" value="2019-04-23T06:21:34" id="sign_time_point"/><br>
-    交易数据:<input type="text" value="7468697320697320746573742064617461" id="sign_data"/>
-    <button id="fill_sign_data" >&lt;-----</button>
-    <input type="text" value="" id="sign_data_str" placeholder=""/><br>
-    附加数据:<input type="text" value="74686973206973207465737420617474616368" id="sign_attach"/>
-    <button id="fill_sign_attach">&lt;-----</button>
-    <input type="text" value="" id="sign_attach_str" placeholder=""/><br>
-    私钥:<input type="text" value="5K2x8VJr7irT38ZbgsP7e4hzGT81E5LK9BmLxrN2T6GtNHKmoLB" id="sign_priv_key"/><br>
-    <button type="button" id="sign_trx_btn">给交易签名</button><br><br>
- 
-    http://127.0.0.1:8888/v1/chain/get_keys<br>
-    <button type="button" id="get_keys_btn">生成一个公私密钥对</button><br><br>
-
-    http://127.0.0.1:8888/v1/chain/char2hex<br>
-    ascii字符:<input type="text" value="today is thusday" id="ascii"/><br>
-    <button type="button" id="char2hex_btn">ascii字符转hex字符</button><br><br>
-
-    http://127.0.0.1:8888/v1/chain/hex2char<br>
-    hex字符:<input type="text" value="746f6461792069732074687573646179" id="hex"/><br>
-    <button type="button" id="hex2char_btn">hex字符转ascii字符</button><br><br>
-
  </body>
 <script src="js/jquery-2.1.4.min.js"></script>
 <script type="text/javascript">
