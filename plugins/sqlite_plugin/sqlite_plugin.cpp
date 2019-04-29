@@ -13,17 +13,20 @@ class sqlite_plugin_impl {
       void db_close();
 
       fc::optional<Block> get_block(uint64_t num);
+      uint64_t get_block_count();
       std::vector<Block> get_all_blocks();
-      //void get_block(fc::sha256 h);
       void append_block(uint64_t id, fc::sha256 hash, std::string json);
    private:
       static int get_block_callback(void *NotUsed, int argc, char **argv, char **azColName);
+      static int get_num_callback(void *NotUsed, int argc, char **argv, char **azColName);
    private:
       sqlite3* db;
       static std::vector<Block> tmp_blks;
+      static uint64_t blk_nums;
 };
 
 std::vector<Block> sqlite_plugin_impl::tmp_blks;
+uint64_t sqlite_plugin_impl::blk_nums = 0;
 
 sqlite_plugin::sqlite_plugin():my(new sqlite_plugin_impl()){}
 sqlite_plugin::~sqlite_plugin(){}
@@ -59,8 +62,13 @@ void sqlite_plugin::append_block(const Block &block){
    my->append_block(block.blk_num, block.digest(), json);
 }
 
-void sqlite_plugin::get_block(uint64_t num){
-   my->get_block(num);
+fc::optional<Block> sqlite_plugin::get_block(uint64_t num){
+   return my->get_block(num);
+}
+
+uint64_t sqlite_plugin::get_block_count()
+{
+   return my->get_block_count();
 }
 
 std::vector<Block> sqlite_plugin::get_all_blocks()
@@ -100,6 +108,21 @@ int sqlite_plugin_impl::get_block_callback(void *NotUsed, int argc, char **argv,
    return 0;
 }
 
+int sqlite_plugin_impl::get_num_callback(void *NotUsed, int argc, char **argv, char **azColName)
+{
+      for(int i = 0; i < argc; i++){
+      dlog("${n} = ${v}", ("n", azColName[i])("v", argv[i] ? argv[i] : "NULL"));
+      if (std::string(azColName[i]) == "num") {
+         FC_ASSERT(argv[i], "can not get num value!");
+         std::stringstream ss;
+         ss << argv[i];
+         ss >> blk_nums;
+      }
+      dlog(" block nums =${b}", ("b", blk_nums));
+   }
+   return 0;
+}
+
 void sqlite_plugin_impl::append_block(uint64_t id, fc::sha256 hash, std::string json){
    char* zErrMsg = NULL;
    std::string sql = "INSERT INTO BLOCK (ID,HASH,JSON) "  \
@@ -127,13 +150,30 @@ fc::optional<Block> sqlite_plugin_impl::get_block(uint64_t num){
    }else{
       dlog("Records created successfully");
    }
-   FC_ASSERT(tmp_blks.size() == 1, " !!!");
+   if (tmp_blks.size() == 0) {
+      return fc::optional<Block>();
+   }
    return fc::optional<Block>(tmp_blks.at(0));
+}
+
+uint64_t sqlite_plugin_impl::get_block_count()
+{
+   char* zErrMsg = NULL;
+   blk_nums = 0;
+   std::string sql = "select count (*) as num from block;";
+   int rc = sqlite3_exec(db, sql.c_str(), get_num_callback, 0, &zErrMsg);
+   if( rc != SQLITE_OK ){
+      elog("SQL error: ${e}\n", ("e", zErrMsg));
+      sqlite3_free(zErrMsg);
+   }else{
+      dlog("Records created successfully");
+   }
+   return blk_nums;
 }
 
 std::vector<Block> sqlite_plugin_impl::get_all_blocks(){
    char* zErrMsg = NULL;
-   std::string sql = "SELECT JSON FROM BLOCK;";
+   std::string sql = "SELECT JSON FROM BLOCK ORDER BY ID;";
    tmp_blks.clear();
    int rc = sqlite3_exec(db, sql.c_str(), get_block_callback, 0, &zErrMsg);
    if( rc != SQLITE_OK ){

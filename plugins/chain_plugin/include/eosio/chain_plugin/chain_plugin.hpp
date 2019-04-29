@@ -5,7 +5,7 @@
 #pragma once
 #include <appbase/application.hpp>
 #include <eosio/sqlite_plugin/sqlite_plugin.hpp>
-#include <controller.hpp>
+#include <buffer.hpp>
 
 namespace fc
 {
@@ -47,32 +47,45 @@ class read_only
    };
    fc::variant get_block(const get_block_params &p);
 
-   using get_keys_params = empty;
-   TO_REMOVED std::vector<fc::variant> get_keys(const get_keys_params&);
+   using get_blocks_results = std::vector<Block>;
+   struct get_blocks_params
+   {
+      std::vector<uint64_t> blk_nums;
+   };
+   fc::variants get_blocks(const get_blocks_params &p);
 
-   struct hex2char_params{
+   using get_keys_params = empty;
+   TO_REMOVED std::vector<fc::variant> get_keys(const get_keys_params &);
+
+   struct hex2char_params
+   {
       std::string hex;
    };
-   TO_REMOVED std::string hex2char(const hex2char_params&);
+   TO_REMOVED std::string hex2char(const hex2char_params &);
 
-   struct char2hex_params{
+   struct char2hex_params
+   {
       std::string str;
    };
-   TO_REMOVED std::string char2hex(const char2hex_params&);
+   TO_REMOVED std::string char2hex(const char2hex_params &);
 
-   struct sign_trx_params{
+   struct sign_trx_params
+   {
       fc::variant trx;
       std::string key;
    };
-   TO_REMOVED fc::variant sign_trx(const sign_trx_params&);
+   TO_REMOVED fc::variant sign_trx(const sign_trx_params &);
 
-
-   read_only(const Controller &c) : ctrl(c){};
+   read_only(const Buffer &c) : buf(c){
+      sqlite_plugin* plugin = app().find_plugin<sqlite_plugin>();
+      this->plugin = plugin;
+   };
    ~read_only() = default;
    void validate() const {}
 
  private:
-   const Controller &ctrl;
+   const Buffer &buf;
+   sqlite_plugin* plugin = nullptr;
 };
 
 class read_write
@@ -94,12 +107,12 @@ class read_write
    using publish_blk_params = empty;
    void push_transaction(const push_transaction_params &p, next_function<push_transaction_results> next);
    void publish_blk(const publish_blk_params &p, next_function<fc::variant> next);
-   read_write(Controller &ctrl) : ctrl(ctrl){};
+   read_write(Buffer &buf) : buf(buf){};
    ~read_write() = default;
    void validate() const {}
 
  private:
-   Controller &ctrl;
+   Buffer &buf;
 };
 } // namespace chain_apis
 
@@ -116,8 +129,8 @@ class chain_plugin : public appbase::plugin<chain_plugin>
    void plugin_startup();
    void plugin_shutdown();
 
-   const Controller &chain() const;
-   Controller &chain();
+   const Buffer &chain() const;
+   Buffer &chain();
 
    chain_apis::read_only get_read_only_api() const { return chain_apis::read_only(chain()); }
    chain_apis::read_write get_read_write_api() { return chain_apis::read_write(chain()); }
@@ -130,6 +143,7 @@ class chain_plugin : public appbase::plugin<chain_plugin>
 
 FC_REFLECT(eosio::chain_apis::empty, )
 FC_REFLECT(eosio::chain_apis::read_only::get_block_params, (blk_num))
+FC_REFLECT(eosio::chain_apis::read_only::get_blocks_params, (blk_nums))
 
 FC_REFLECT(eosio::chain_apis::read_only::hex2char_params, (hex))
 FC_REFLECT(eosio::chain_apis::read_only::char2hex_params, (str))

@@ -14,10 +14,10 @@ using namespace eosio;
 
 class chain_api_plugin_impl {
 public:
-   chain_api_plugin_impl(Controller& ctrl)
-      : ctrl(ctrl) {}
+   chain_api_plugin_impl(Buffer& buf)
+      : buf(buf) {}
 
-   Controller& ctrl;
+   Buffer& buf;
 };
 
 
@@ -83,6 +83,7 @@ void chain_api_plugin::plugin_startup() {
    _http_plugin.add_api({
       CHAIN_RO_CALL(get_info, 200l),
       CHAIN_RO_CALL(get_block, 200l),
+      CHAIN_RO_CALL(get_blocks, 200l),
 
       CHAIN_RO_CALL(get_keys, 200l),
       CHAIN_RO_CALL(hex2char, 200l),

@@ -12,8 +12,20 @@ fc::sha256 Block::digest() const
     fc::raw::pack(enc, prior_hash);
     fc::raw::pack(enc, time_point);
     fc::raw::pack(enc, merkle_root);
-    //fc::raw::pack(enc, trxs);
     return enc.result();
+}
+
+bool Block::valid() const
+{
+    if (fc::crypto::signature() == sig) {
+        wlog("a blank signature");
+        return false;
+    }
+    auto recover_key = fc::crypto::public_key(sig, digest());
+    //FIXME
+    fc::crypto::public_key pub_key(std::string("EOS6hNSYPHaJm1TBmrLHLytxjwEcX6gbVNRZe4o7DxcVL7ojH9PCZ"));
+    dlog("signature = ${sig} ,recover key = ${rec}, public key = ${pub}", ("sig", sig)("rec", recover_key)("pub", pub_key)); 
+    return recover_key == pub_key;
 }
 
 void Block::push_trxs(std::vector<Transaction>& trxs)

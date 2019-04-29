@@ -32,9 +32,11 @@ class sqlite_plugin : public appbase::plugin<sqlite_plugin>
    void plugin_shutdown();
 
    void append_block(const Block &block);
-   void get_block(uint64_t num);
+   fc::optional<Block> get_block(uint64_t num);
    std::vector<Block> get_all_blocks();
+   uint64_t get_block_count();
 
+   
  private:
    std::unique_ptr<class sqlite_plugin_impl> my;
 };

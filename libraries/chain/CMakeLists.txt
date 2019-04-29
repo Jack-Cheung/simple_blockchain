@@ -3,8 +3,7 @@ file(GLOB HEADERS "include/*.hpp" )
 add_library( eosio_chain
              transaction.cpp
              block.cpp
-             chain_snapshot.cpp
-             controller.cpp
+             buffer.cpp
              ${HEADERS}
              )
 

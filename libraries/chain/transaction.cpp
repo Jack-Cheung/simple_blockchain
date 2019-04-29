@@ -16,7 +16,7 @@ fc::sha256 Transaction::digest() const
 
 bool Transaction::validate() const
 {
-    //TODO  it is also needed to examin that if the time is too delay, the program's now time is not right
+    //FIXME  it is also needed to examin that if the time is too delay, the program's now time is not right
     if (0 == data.size()) {
         wlog("transaction without data");
         return false;

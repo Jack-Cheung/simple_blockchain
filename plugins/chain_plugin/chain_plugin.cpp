@@ -5,7 +5,7 @@
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <fc/exception/exception.hpp>
 
-namespace fc
+/*namespace fc
 {
    //TODO if not used, remove it
    string from_hex(const std::vector<char>& vec)
@@ -17,7 +17,7 @@ namespace fc
       }
       return ret;
    }
-}
+}*/
 
 namespace eosio
 {
@@ -48,7 +48,7 @@ static appbase::abstract_plugin &_chain_plugin = app().register_plugin<chain_plu
 class chain_plugin_impl
 {
  public:
-   fc::optional<Controller> chain;
+   fc::optional<Buffer> chain;
 };
 
 chain_plugin::chain_plugin() : my(new chain_plugin_impl()) {}
@@ -77,24 +77,13 @@ void chain_plugin::plugin_startup()
 {
    dlog("chain_plugin startup");
    FC_ASSERT(my->chain, "controller object is nullopt");
-   Controller& c = *my->chain;
-   /*std::vector<Transaction> trxs;
-   Transaction t1;
-   t1.fillTestData();
-   Transaction t2;
-   t2.fillTestData();
-   c.commitTrx(t1);
-   c.commitTrx(t2);
-   c.pushBlock();
-   c.commitTrx(t2);
-   c.commitTrx(t2);
-   c.pushBlock();*/
+   Buffer& buf = *my->chain;
    sqlite_plugin* db = app().find_plugin<sqlite_plugin>();
-   //std::vector<Block> blks = std::move(db->get_all_blocks());
-   //dlog("replayed blocks = ${b}", ("b", blks));
-   c.replayBlock(db->get_all_blocks());
-   //c->replayBlock();
-   
+   auto blk_count = db->get_block_count();
+   if (blk_count > 0) {
+      Block last_block = *db->get_block(blk_count - 1);
+      buf.cache_last_blk(last_block);
+   }
 }
 
 void chain_plugin::plugin_shutdown()
@@ -102,30 +91,58 @@ void chain_plugin::plugin_shutdown()
    dlog("chain_plugin shutdown");
 }
 
-Controller &chain_plugin::chain() { return *my->chain; }
+Buffer &chain_plugin::chain() { return *my->chain; }
 
-const Controller &chain_plugin::chain() const { return *my->chain; }
+const Buffer &chain_plugin::chain() const { return *my->chain; }
 
 namespace chain_apis
 {
 
 fc::variant read_only::get_info(const get_info_params &p)
 {
-   auto res = ctrl.getInfo();
-   return res;
+   auto blk_count = plugin->get_block_count();
+   auto trx_count = buf.get_catch_trxs_count();
+   return fc::mutable_variant_object()
+            ("block_num", blk_count)
+            ("pending_trx", trx_count);
 }
 
 fc::variant read_only::get_block(const get_block_params& p)
 {
-   const auto blk = ctrl.getBlock(p.blk_num);
+   FC_ASSERT(plugin, "plugin is null");
+   auto blk = plugin->get_block(p.blk_num);
    if (blk) {
       fc::variant v;
       fc::to_variant(*blk, v);
       return v;
    }
-   //TODO get block from database
    return fc::mutable_variant_object()
          ("error", "block not found");
+}
+
+fc::variants read_only::get_blocks(const get_blocks_params &p)
+{
+   //TODO
+   fc::variants res;
+   sqlite_plugin* plugin = app().find_plugin<sqlite_plugin>();
+   if (0 == p.blk_nums.size()) {
+      auto blocks = plugin->get_all_blocks();
+      for(auto& blk : blocks)
+      {
+         fc::variant v;
+         fc::to_variant(blk, v);
+         res.push_back(v);
+      }
+      return res;
+   }
+   for(auto idx : p.blk_nums )
+   {
+      auto block = plugin->get_block(idx);
+      fc::variant v;
+      fc::to_variant(*block, v);
+      res.push_back(v);
+   }
+   return res;
 }
 
 TO_REMOVED std::vector<fc::variant> read_only::get_keys(const get_keys_params&){
@@ -148,7 +165,7 @@ TO_REMOVED std::string read_only::hex2char(const hex2char_params& p){
    using namespace fc;
    string hex = p.hex;
    char* out_data = new char[1024]{0};
-   size_t len = from_hex(hex, out_data, 1024);
+   from_hex(hex, out_data, 1024);
    dlog("ASCII CHARS: ${c}\n", ("c", out_data));
    std::string ret = out_data;
    delete[] out_data;
@@ -181,8 +198,8 @@ TO_REMOVED fc::variant read_only::sign_trx(const sign_trx_params& p){
       tx.signature = pri_key.sign(digest);
       variant v;
       to_variant(tx,v);
-      dlog("SIGNED TRANSACTION: ${j}\n", ("j", json::to_string(tx)));
-      dlog("SIGNED TRANSACTION: ${j}\n", ("j", tx));
+      //dlog("SIGNED TRANSACTION: ${j}\n", ("j", json::to_string(tx)));
+      //dlog("SIGNED TRANSACTION: ${j}\n", ("j", tx));
       return v;  
    }
    catch(const fc::exception& e)
@@ -208,7 +225,7 @@ void read_write::push_transaction(const read_write::push_transaction_params &p, 
       {
          FC_THROW_EXCEPTION(fc::trx_invalid_arg_exception,"transaction is not acceptable");
       }
-      ctrl.commitTrx(trx);
+      buf.cache_trx(trx);
       fc::variant v;
       fc::to_variant(trx, v);
       next(push_transaction_results{v});
@@ -220,9 +237,10 @@ void read_write::publish_blk(const publish_blk_params& p, next_function<fc::vari
 {
    try
    {
-      Block last_blk = ctrl.pushBlock();
+      Block last_blk = buf.build_block();
       sqlite_plugin* plugin = app().find_plugin<sqlite_plugin>();
       plugin->append_block(last_blk);
+      buf.cache_last_blk(last_blk);
       next(fc::variant(fc::mutable_variant_object()("message","operation complete")));
    }
    CATCH_AND_CALL(next)

@@ -7,6 +7,7 @@ class Block{
 public:
     Block();
     fc::sha256 digest() const;
+    bool valid() const;
 
     uint64_t blk_num;
     fc::sha256  prior_hash;
