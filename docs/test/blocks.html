@@ -26,9 +26,7 @@
 
 </head>
 <body align="center">
-    <div id="box">
-        <a class="btn" href="javascript:;">点击</a>
-    </div>
+
         
 </body>
     <script src="js/jquery-2.1.4.min.js"></script>
@@ -36,26 +34,18 @@
 	var str2 = "";
     var object;
         $(function(){
-            
-			var ii;
-             $('.btn').on('click', function(){
-				 //$(".divv").toggle();
                 $.ajax({
                     type: "POST", //请求的方式，也有get请求
-                    url: "http://127.0.0.1:8888/v1/chain/get_block", //请求地址，后台提供的,这里我在本地自己建立了个json的文件做例子
+                    url: "http://127.0.0.1:8888/v1/chain/get_blocks", //请求地址，后台提供的,这里我在本地自己建立了个json的文件做例子
                     dataType: "json", //json格式，后台返回的数据为json格式的。
-                    data:"{\"blk_num\":0}",
+                    //data:"{\"blk_nums\":0}",
                     success:function(data){
 						console.log(data);
                         object = data;
 						var obj;
-						var i;
-						var html="";//用一个变量来存储json中的数据
-						//将数据显示在页面上
 						var str1 = "";
-                        data = [data];//TODO
 						console.log(data[0].trxs);
-							var obj = data[0].trxs;
+						obj = data[0].trxs;
 						//遍历数据
 						$.each(data,function(index,element){
 							str1 +="<div class='shang' id='dv"+index+"' >" +
@@ -77,7 +67,6 @@
 						console.log("jsonp.error:"+textStatus);    
 					} 
                 });
-            }); 
         });
 		
 		function kanti(item){
@@ -93,17 +82,13 @@
                 }
             }
 			str2="";
-            var i;
-            console.log(object.trxs);
-            //var obj = data[item].trxs;
-            var obj = object.trxs;
+            var obj = object[item].trxs;
             len = obj.length;
             h = 260 + len * 165;
             $("#dv" + item + "").css({"background-color":"#ffcc99","height":"" + h + ""});
             $(".str2div_" + item).toggle();
             //遍历数据
             $.each(obj,function(index,elementtrxs){      
-                //alert("添加交易信息");
                 str2 +="<div class='str2div_" + item + "  fold ' id='str2div_" + item + "_" + index + "' style='display:none;'>" +
                          "<span class='btn1' style='float:left' href='javascript:;'>交易</span><br/><br/> " +
                          "<ul><li class='titileli'>交易时间</li><li>" + elementtrxs['time_point'] + "</li>" +
@@ -111,7 +96,6 @@
                              "<li class='titileli'>交易签名<li>" + elementtrxs['signature']+"</li>" +
                              "<li class='titileli'>交易公钥<li>" + elementtrxs['pub_key']+"</li></ul></div>";
             })
-            //遍历完成之后
             $("#ti" + item + "").append(str2);
             $(".str2div_" + item).toggle();
 		}

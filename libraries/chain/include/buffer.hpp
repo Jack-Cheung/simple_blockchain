@@ -8,13 +8,12 @@ class Buffer
     std::vector<Transaction> trx_pool;
     fc::crypto::public_key producer_key;
     fc::crypto::private_key private_key;
-    //Block blk_cache; // NOT USED
+    
     Block last_block;
 
   public:
     Buffer();
     ~Buffer();
-    //TODO
     void cache_last_blk(const Block &blk);
     uint64_t get_catch_trxs_count() const;
     void cache_trx(Transaction &trx);

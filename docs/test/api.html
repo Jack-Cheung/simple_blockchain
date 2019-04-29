@@ -14,6 +14,11 @@
     http://127.0.0.1:8888/v1/chain/get_block<br>
     区块号:<input type="text" value="0" id="blk_num"/><br>
     <button type="button" id="get_block_btn">根据块号查询区块</button><br><br>
+
+    http://127.0.0.1:8888/v1/chain/get_blocks<br>
+    区块号:<input type="text" value="0,1" id="blk_nums"/><br>
+    <button type="button" id="get_blocks_btn">根据块号查询多个区块</button><br><br>
+
     http://127.0.0.1:8888/v1/chain/publish_blk<br>
     <button type="button" id="publish_blk_btn">区块上链</button><br><br>
     http://127.0.0.1:8888/v1/chain/push_transaction<br>
@@ -64,10 +69,17 @@ window.onload=function(){
     $("#get_info_btn").click(function(){
         ajax("http://127.0.0.1:8888/v1/chain/get_info", null, callback_print);
     });
+
     $("#get_block_btn").click(function(){
         blk_num = $("#blk_num").val();
         json = "{\"blk_num\":" + blk_num + "}";
         ajax("http://127.0.0.1:8888/v1/chain/get_block", json, callback_print);
+    });
+
+    $("#get_blocks_btn").click(function(){
+        blk_num = $("#blk_nums").val();
+        json = "{\"blk_nums\":[" + blk_num + "]}";
+        ajax("http://127.0.0.1:8888/v1/chain/get_blocks", json, callback_print);
     });
     $("#publish_blk_btn").click(function(){
         ajax("http://127.0.0.1:8888/v1/chain/publish_blk", null, callback_print);

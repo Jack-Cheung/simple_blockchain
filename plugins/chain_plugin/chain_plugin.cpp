@@ -5,20 +5,6 @@
 #include <eosio/chain_plugin/chain_plugin.hpp>
 #include <fc/exception/exception.hpp>
 
-/*namespace fc
-{
-   //TODO if not used, remove it
-   string from_hex(const std::vector<char>& vec)
-   {
-      string ret;
-      for(auto& e: vec)
-      {
-         ret += e;
-      }
-      return ret;
-   }
-}*/
-
 namespace eosio
 {
 static appbase::abstract_plugin &_chain_plugin = app().register_plugin<chain_plugin>();
@@ -122,7 +108,6 @@ fc::variant read_only::get_block(const get_block_params& p)
 
 fc::variants read_only::get_blocks(const get_blocks_params &p)
 {
-   //TODO
    fc::variants res;
    sqlite_plugin* plugin = app().find_plugin<sqlite_plugin>();
    if (0 == p.blk_nums.size()) {
@@ -138,9 +123,11 @@ fc::variants read_only::get_blocks(const get_blocks_params &p)
    for(auto idx : p.blk_nums )
    {
       auto block = plugin->get_block(idx);
-      fc::variant v;
-      fc::to_variant(*block, v);
-      res.push_back(v);
+      if (block) {
+         fc::variant v;
+         fc::to_variant(*block, v);
+         res.push_back(v);
+      }
    }
    return res;
 }

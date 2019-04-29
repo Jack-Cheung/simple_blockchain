@@ -10,8 +10,6 @@
 namespace fc
 {
 FC_DECLARE_EXCEPTION(trx_invalid_arg_exception, invalid_arg_exception_code, "Invalid Argument");
-//eg."74686973" ====> "this"
-string from_hex(const std::vector<char> &vec);
 } // namespace fc
 
 namespace eosio
