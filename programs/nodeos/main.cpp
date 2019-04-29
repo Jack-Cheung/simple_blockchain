@@ -89,6 +89,5 @@ int main(int argc, char** argv)
       elog("unknown exception");
       return OTHER_FAIL;
    }
-
    return SUCCESS;
 }
